@@ -64,10 +64,10 @@ public class Controller implements Initializable {
 
             boolean chongfu = false;
             String line = null;
-            try{
-                FileReader fr=new FileReader(filePath);
-                BufferedReader br=new BufferedReader(fr);
-                while((line=br.readLine())!=null) {
+            try {
+                FileReader fr = new FileReader(filePath);
+                BufferedReader br = new BufferedReader(fr);
+                while ((line = br.readLine()) != null) {
                     System.out.println(line);
                     String[] arr = line.split(" ");
                     for (String s : arr) {
@@ -78,12 +78,12 @@ public class Controller implements Initializable {
                     }
                 }
                 fr.close();
-            }catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
 
-            if(chongfu){
+            if (chongfu) {
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setContentText("The username is being used!");
@@ -91,7 +91,7 @@ public class Controller implements Initializable {
                     Platform.exit();
                 });
 
-            }else{
+            } else {
                 FileWriter fileWriter = null;
                 try {
                     fileWriter = new FileWriter(filePath, true);
@@ -125,7 +125,7 @@ public class Controller implements Initializable {
         chatList.setCellFactory(new ChatCellFactory());
         chatList.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
-                    if(newValue != null) {
+                    if (newValue != null) {
                         chatContentList.setItems(FXCollections.observableList(newValue.getMessageList()));
                         currentType = newValue.getChatType();
                         currentChatName = newValue.getChatName();
@@ -144,7 +144,7 @@ public class Controller implements Initializable {
         // FIXME: get the user list from server, the current user's name should be filtered out
 //        userSel.getItems().addAll("Item 1", "Item 2", "Item 3");
         UserList.getUserList().forEach(s -> {
-            if(!Objects.equals(s, this.username)) {
+            if (!Objects.equals(s, this.username)) {
                 userSel.getItems().add(s);
             }
         });
@@ -164,15 +164,13 @@ public class Controller implements Initializable {
 
         // TODO: if the current user already chatted with the selected user, just open the chat with that user
         // TODO: otherwise, create a new chat item in the left panel, the title should be the selected username
-        if((user.get() != null) && !chatWithName.containsKey(user.get())){
-//            System.out.println(user.get());
+        if ((user.get() != null) && !chatWithName.containsKey(user.get())) {
+
             Chat chat = new Chat(ChatType.PRIVATE, user.get());
             chatList.getItems().add(chat);
             chatWithName.put(user.get(), chatList.getItems().indexOf(chat));
             chatList.getSelectionModel().select(chat);
-////            System.out.println("chatWithName: " + chatWithName.toString());
-        }
-        else if((user.get() != null) && chatWithName.containsKey(user.get())){
+        } else if ((user.get() != null) && chatWithName.containsKey(user.get())) {
             chatList.getSelectionModel().select(null);
             chatList.getSelectionModel().select(chatWithName.get(user.get()));
         }
@@ -196,7 +194,7 @@ public class Controller implements Initializable {
         ComboBox<String> userSel = new ComboBox<>();
 
         UserList.getUserList().forEach(s -> {
-            if(!Objects.equals(s, this.username)) {
+            if (!Objects.equals(s, this.username)) {
                 userSel.getItems().add(s);
             }
         });
@@ -213,7 +211,7 @@ public class Controller implements Initializable {
         Button addBtn = new Button("Add");
         addBtn.setOnAction(event -> {
             user.set(userSel.getSelectionModel().getSelectedItem());
-            if(!selected.contains(user.get())) {
+            if (!selected.contains(user.get())) {
                 selectedMembers.setText(selectedMembers.getText() + "," + user.get());
                 selected.add(user.get());
             }
@@ -237,15 +235,14 @@ public class Controller implements Initializable {
         stage.showAndWait();
 
         final String users = selectedMembers.getText();
-        if(!users.equals(username) && !chatWithName.containsKey(users)){
+        if (!users.equals(username) && !chatWithName.containsKey(users)) {
 //            System.out.println(users);
             Chat chat = new Chat(ChatType.GROUP, users);
             chat.setMembers(Arrays.asList(users.split(",")));
             chatList.getItems().add(chat);
             chatWithName.put(users, chatList.getItems().indexOf(chat));
             chatList.getSelectionModel().select(chat);
-        }
-        else if(!users.equals(username) && chatWithName.containsKey(users)){
+        } else if (!users.equals(username) && chatWithName.containsKey(users)) {
             chatList.getSelectionModel().select(null);
             chatList.getSelectionModel().select(chatWithName.get(users));
         }
@@ -260,27 +257,24 @@ public class Controller implements Initializable {
     @FXML
     public void doSendMessage() {
         // TODO
-        if(!inputArea.getText().isEmpty() && chatList.getSelectionModel().getSelectedItem() != null){
-            if(currentType == ChatType.PRIVATE){
+        if (!inputArea.getText().isEmpty() && chatList.getSelectionModel().getSelectedItem() != null) {
+            if (currentType == ChatType.PRIVATE) {
                 Message message = new Message(MessageType.PRIVATE,
                         username, currentChatName, inputArea.getText());
                 Connector.send(message);
-////                System.out.println(message.toString());
-////                System.out.println(chatWithName.get(currentChatName));
-////                System.out.println(chatList.getItems().toString());
+
                 Chat chat = chatList.getItems().get(chatWithName.get(currentChatName));
                 chat.addMessage(message);
                 chatList.getItems().set(chatWithName.get(currentChatName), chat);
                 chatList.getSelectionModel().select(chatWithName.get(currentChatName));
-            }
-            else if(currentType == ChatType.GROUP){
+            } else if (currentType == ChatType.GROUP) {
                 String sentBy = currentChatName + ":::" + username;
-////                System.out.println(currentChatName);
+
                 Chat chat = chatList.getItems().get(chatWithName.get(currentChatName));
                 String sendTo = chat.memberString();
                 Message message = new Message(MessageType.GROUP,
                         sentBy, sendTo, inputArea.getText());
-//                System.out.println("to: " + message.getSendTo());
+
                 Connector.send(message);
                 chat.addMessage(new Message(MessageType.GROUP,
                         username, sendTo, inputArea.getText()));
@@ -293,18 +287,17 @@ public class Controller implements Initializable {
         chatList.getSelectionModel().select(chatWithName.get(currentChatName));
     }
 
-    public void handleReceive(Message message){
+    public void handleReceive(Message message) {
 //        System.out.println(message);
         Platform.runLater(() -> {
-            if(message.getMessageType() == MessageType.PRIVATE){
-                if(chatWithName.containsKey(message.getName())){
+            if (message.getMessageType() == MessageType.PRIVATE) {
+                if (chatWithName.containsKey(message.getName())) {
                     Chat chat = chatList.getItems().get(chatWithName.get(message.getName()));
                     chat.addMessage(message);
                     chatList.getItems().set(chatWithName.get(message.getName()), chat);
                     chatList.getSelectionModel().select(null);
                     chatList.getSelectionModel().select(chatWithName.get(message.getName()));
-                }
-                else{
+                } else {
                     Chat chat = new Chat(ChatType.PRIVATE, message.getName());
                     chat.addMember(message.getName());
                     chat.addMessage(message);
@@ -313,21 +306,19 @@ public class Controller implements Initializable {
                     chatList.getSelectionModel().select(null);
                     chatList.getSelectionModel().select(chat);
                 }
-            }
-            else if(message.getMessageType() == MessageType.GROUP){
+            } else if (message.getMessageType() == MessageType.GROUP) {
 //                System.out.println(message);
                 String groupName = message.getName().split(":::")[0];
                 String senderName = message.getName().split(":::")[1];
                 message.setSentBy(senderName);
-                if(chatWithName.containsKey(groupName)){
+                if (chatWithName.containsKey(groupName)) {
                     Chat chat = chatList.getItems().get(chatWithName.get(groupName));
                     chat.setMembers(Arrays.asList(message.getSendTo().split(", ")));
                     chat.addMessage(message);
                     chatList.getItems().set(chatWithName.get(groupName), chat);
                     chatList.getSelectionModel().select(null);
                     chatList.getSelectionModel().select(chatWithName.get(groupName));
-                }
-                else{
+                } else {
                     Chat chat = new Chat(ChatType.GROUP, groupName);
                     chat.setMembers(Arrays.asList(message.getSendTo().split(", ")));
                     chat.addMessage(message);
@@ -344,7 +335,7 @@ public class Controller implements Initializable {
     /**
      * You may change the cell factory if you changed the design of {@code Message} model.
      * Hint: you may also define a cell factory for the chats displayed in the left panel,
-     *          or simply override the toString method.
+     * or simply override the toString method.
      */
     private class MessageCellFactory implements Callback<ListView<Message>, ListCell<Message>> {
         @Override
@@ -402,7 +393,7 @@ public class Controller implements Initializable {
                     HBox wrapper = new HBox();
                     // TODO: member>=3
                     Label chatNameLabel = new Label(chat.getChatName());
-                    if(chat.getMembers().size() > 3){
+                    if (chat.getMembers().size() > 3) {
                         chatNameLabel.setText(
                                 chat.getThree() + "..." + "(" + chat.getMembers().size() + ")"
                         );

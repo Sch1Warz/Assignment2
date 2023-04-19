@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -46,6 +47,18 @@ public class Connector implements Runnable {
                 }
             }
         } catch (ClassNotFoundException | IOException e){
+
+            String filePath = "C:\\Users\\28573\\Desktop\\test\\Assignment2\\names.txt";
+            FileWriter fileWriter = null;
+            try {
+                fileWriter = new FileWriter(filePath);
+                fileWriter.write("");
+                fileWriter.flush();
+                fileWriter.close();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
 
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.WARNING);

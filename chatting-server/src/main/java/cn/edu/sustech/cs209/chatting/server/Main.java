@@ -115,6 +115,32 @@ class Server1 {
                     System.out.println("Client No Connection!");
                     break;
                 }finally{
+                    String filePath = "C:\\Users\\28573\\Desktop\\test\\Assignment2\\names.txt";
+                    try {
+                        String result = "";
+                        String line = null;
+                        FileReader fr = new FileReader(filePath);
+                        FileWriter writer = new FileWriter(filePath);
+                        BufferedReader br = new BufferedReader(fr);
+                        while ((line = br.readLine()) != null) {
+                            System.out.println(line);
+                            String[] arr = line.split(" ");
+
+                            for (String s : arr) {
+                                if (!Objects.equals(s, this.username)) {
+                                    result += (this.username + " ");
+                                }
+                            }
+                        }
+                        writer.write(result);
+                        writer.flush();
+                        writer.close();
+                        fr.close();
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     UserList.removeUser(this.username);
                     clients.remove(this.username);
                     clients.forEach((s, clientService) -> {
