@@ -3,12 +3,16 @@ package cn.edu.sustech.cs209.chatting.client;
 import cn.edu.sustech.cs209.chatting.common.Message;
 import cn.edu.sustech.cs209.chatting.common.MessageType;
 import cn.edu.sustech.cs209.chatting.common.UserList;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class Connector implements Runnable {
     public String username;
@@ -26,10 +30,13 @@ public class Connector implements Runnable {
         }
         try{
             while(socket.isConnected()) {
+                Platform.runLater(() -> this.controller.currentOnlineCnt.setText(String.valueOf(UserList.getUserList().size())));
+
                 Message message = (Message) inputStream.readObject();
                 if(message.getMessageType() == MessageType.NOTIFICATION){
-                    UserList.setUserList(Arrays.asList(message.getData().split(", ")));
+                    UserList.setUserList(Arrays.asList(message.getMessage().split(", ")));
                     System.out.println(UserList.getUserList());
+
                 }
                 else if(message.getMessageType() == MessageType.PRIVATE){
                     this.controller.handleReceive(message);
@@ -39,7 +46,20 @@ public class Connector implements Runnable {
                 }
             }
         } catch (ClassNotFoundException | IOException e){
-            e.printStackTrace();
+
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Server is closed");
+                ButtonType buttonTypeOne = new ButtonType("OK");
+
+                alert.getButtonTypes().setAll(buttonTypeOne);
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == buttonTypeOne){
+                    Platform.exit();
+                }
+
+            });
         }
     }
 

@@ -1,8 +1,9 @@
 package cn.edu.sustech.cs209.chatting.client;
 
+import cn.edu.sustech.cs209.chatting.client.bubble.BubbleSpec;
+import cn.edu.sustech.cs209.chatting.client.bubble.BubbledLabel;
 import cn.edu.sustech.cs209.chatting.common.*;
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -10,17 +11,22 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements Initializable {
 
+    public Label currentOnlineCnt;
     Map<String, Integer> chatWithName;
 
     @FXML
@@ -41,6 +47,7 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
+
         Dialog<String> dialog = new TextInputDialog();
         dialog.setTitle("Login");
         dialog.setHeaderText(null);
@@ -53,29 +60,75 @@ public class Controller implements Initializable {
                      if so, ask the user to change the username
              */
             username = input.get();
-            currentUsername.setText("Current User: " + username);
-            Connector connector = new Connector(username, this);
-            Thread x = new Thread(connector);
-            x.start();
-            chatWithName = new HashMap<>();
+            String filePath = "C:\\Users\\28573\\Desktop\\test\\Assignment2\\names.txt";
+
+            boolean chongfu = false;
+            String line = null;
+            try{
+                FileReader fr=new FileReader(filePath);
+                BufferedReader br=new BufferedReader(fr);
+                while((line=br.readLine())!=null) {
+                    System.out.println(line);
+                    String[] arr = line.split(" ");
+                    for (String s : arr) {
+                        if (Objects.equals(s, username)) {
+                            chongfu = true;
+                            break;
+                        }
+                    }
+                }
+                fr.close();
+            }catch (IOException e){
+                throw new RuntimeException(e);
+            }
+
+
+            if(chongfu){
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setContentText("The username is being used!");
+                    alert.showAndWait();
+                    Platform.exit();
+                });
+
+            }else{
+                FileWriter fileWriter = null;
+                try {
+                    fileWriter = new FileWriter(filePath, true);
+                    fileWriter.write(" " + username);
+                    fileWriter.flush();
+                    fileWriter.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+                currentUsername.setText("Current User: " + username);
+                Connector connector = new Connector(username, this);
+                Thread x = new Thread(connector);
+                x.start();
+                chatWithName = new HashMap<>();
+            }
+
 
         } else {
-//            System.out.println("Invalid username " + input + ", exiting");
-            Platform.exit();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setContentText("Please input a username!");
+                alert.showAndWait();
+                Platform.exit();
+            });
+
         }
 
         chatContentList.setCellFactory(new MessageCellFactory());
         chatList.setCellFactory(new ChatCellFactory());
         chatList.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
-////                    System.out.println("in");
-////                    System.out.println("old: " + oldValue.getMessageList().toString());
-////                    System.out.println("new: "+ newValue.getMessageList().toString());
                     if(newValue != null) {
                         chatContentList.setItems(FXCollections.observableList(newValue.getMessageList()));
                         currentType = newValue.getChatType();
                         currentChatName = newValue.getChatName();
-//                        System.out.println(currentChatName);
                     }
                 }
         );
@@ -244,27 +297,27 @@ public class Controller implements Initializable {
 //        System.out.println(message);
         Platform.runLater(() -> {
             if(message.getMessageType() == MessageType.PRIVATE){
-                if(chatWithName.containsKey(message.getSentBy())){
-                    Chat chat = chatList.getItems().get(chatWithName.get(message.getSentBy()));
+                if(chatWithName.containsKey(message.getName())){
+                    Chat chat = chatList.getItems().get(chatWithName.get(message.getName()));
                     chat.addMessage(message);
-                    chatList.getItems().set(chatWithName.get(message.getSentBy()), chat);
+                    chatList.getItems().set(chatWithName.get(message.getName()), chat);
                     chatList.getSelectionModel().select(null);
-                    chatList.getSelectionModel().select(chatWithName.get(message.getSentBy()));
+                    chatList.getSelectionModel().select(chatWithName.get(message.getName()));
                 }
                 else{
-                    Chat chat = new Chat(ChatType.PRIVATE, message.getSentBy());
-                    chat.addMember(message.getSentBy());
+                    Chat chat = new Chat(ChatType.PRIVATE, message.getName());
+                    chat.addMember(message.getName());
                     chat.addMessage(message);
                     chatList.getItems().add(chat);
-                    chatWithName.put(message.getSentBy(), chatList.getItems().indexOf(chat));
+                    chatWithName.put(message.getName(), chatList.getItems().indexOf(chat));
                     chatList.getSelectionModel().select(null);
                     chatList.getSelectionModel().select(chat);
                 }
             }
             else if(message.getMessageType() == MessageType.GROUP){
 //                System.out.println(message);
-                String groupName = message.getSentBy().split(":::")[0];
-                String senderName = message.getSentBy().split(":::")[1];
+                String groupName = message.getName().split(":::")[0];
+                String senderName = message.getName().split(":::")[1];
                 message.setSentBy(senderName);
                 if(chatWithName.containsKey(groupName)){
                     Chat chat = chatList.getItems().get(chatWithName.get(groupName));
@@ -307,32 +360,33 @@ public class Controller implements Initializable {
                         return;
                     }
 
-                    HBox wrapper = new HBox();
-                    Label nameLabel = new Label(msg.getSentBy());
-                    Label msgLabel = new Label(msg.getData());
+                    BubbledLabel bl6 = new BubbledLabel();
+                    bl6.setText(msg.getName() + ": " + msg.getMessage());
 
-                    nameLabel.setPrefSize(50, 20);
-                    nameLabel.setWrapText(true);
-                    nameLabel.setStyle("-fx-border-color: black; -fx-border-width: 1px;");
 
-                    if (username.equals(msg.getSentBy())) {
-                        wrapper.setAlignment(Pos.TOP_RIGHT);
-                        wrapper.getChildren().addAll(msgLabel, nameLabel);
-                        msgLabel.setPadding(new Insets(0, 20, 0, 0));
+                    HBox x = new HBox();
+
+                    if (username.equals(msg.getName())) {
+                        bl6.setBackground(new Background(new BackgroundFill(Color.LIGHTGREEN, null, null)));
+
+                        bl6.setBubbleSpec(BubbleSpec.FACE_LEFT_CENTER);
+                        x.setAlignment(Pos.TOP_RIGHT);
+                        x.getChildren().addAll(bl6);
                     } else {
-                        wrapper.setAlignment(Pos.TOP_LEFT);
-                        wrapper.getChildren().addAll(nameLabel, msgLabel);
-                        msgLabel.setPadding(new Insets(0, 0, 0, 20));
+                        bl6.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
+                        bl6.setBubbleSpec(BubbleSpec.FACE_RIGHT_CENTER);
+                        x.setAlignment(Pos.TOP_LEFT);
+                        x.getChildren().addAll(bl6);
                     }
 
                     setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                    setGraphic(wrapper);
+                    setGraphic(x);
                 }
             };
         }
     }
 
-    private class ChatCellFactory implements Callback<ListView<Chat>, ListCell<Chat>> {
+    private static class ChatCellFactory implements Callback<ListView<Chat>, ListCell<Chat>> {
 
         @Override
         public ListCell<Chat> call(ListView<Chat> param) {

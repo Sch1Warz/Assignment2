@@ -21,7 +21,7 @@ public class Message implements Serializable {
         return messageType;
     }
 
-    public String getSentBy() {
+    public String getName() {
         return sentBy;
     }
 
@@ -29,7 +29,7 @@ public class Message implements Serializable {
         return sendTo;
     }
 
-    public String getData() {
+    public String getMessage() {
         return data;
     }
 

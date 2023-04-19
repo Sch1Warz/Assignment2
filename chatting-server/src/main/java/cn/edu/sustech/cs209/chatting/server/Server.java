@@ -7,7 +7,6 @@ import cn.edu.sustech.cs209.chatting.common.UserList;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -64,9 +63,9 @@ public class Server {
 //                    System.out.println(
 //                            clientMsg.getSentBy() + " " + clientMsg.getSendTo() + " " + clientMsg.getData());
                     if(clientMsg.getMessageType() == MessageType.CONNECTED){
-                        this.username = clientMsg.getSentBy();
+                        this.username = clientMsg.getName();
                         System.out.println(
-                                clientMsg.getSentBy() + " " + clientMsg.getSendTo() + " " + clientMsg.getData());
+                                clientMsg.getName() + " " + clientMsg.getSendTo() + " " + clientMsg.getMessage());
                         UserList.addUser(this.username);
                         System.out.println(UserList.getUserList());
                         System.out.println(UserList.listString());
