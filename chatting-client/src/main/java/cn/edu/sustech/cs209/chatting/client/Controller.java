@@ -281,7 +281,7 @@ public class Controller implements Initializable {
         if (!inputArea.getText().isEmpty() && chatList.getSelectionModel().getSelectedItem() != null) {
             if (currentType == ChatType.PRIVATE) {
                 Message message = new Message(MessageType.PRIVATE,
-                        username, currentChatName, inputArea.getText());
+                        username, currentChatName, convertUnicodeToEmoji(inputArea.getText()));
                 Connector.send(message);
 
                 Chat chat = chatList.getItems().get(chatWithName.get(currentChatName));
@@ -294,11 +294,11 @@ public class Controller implements Initializable {
                 Chat chat = chatList.getItems().get(chatWithName.get(currentChatName));
                 String sendTo = chat.memberString();
                 Message message = new Message(MessageType.GROUP,
-                        sentBy, sendTo, inputArea.getText());
+                        sentBy, sendTo, convertUnicodeToEmoji(inputArea.getText()));
 
                 Connector.send(message);
                 chat.addMessage(new Message(MessageType.GROUP,
-                        username, sendTo, inputArea.getText()));
+                        username, sendTo, convertUnicodeToEmoji(inputArea.getText())));
                 chatList.getItems().set(chatWithName.get(currentChatName), chat);
                 chatList.getSelectionModel().select(chatWithName.get(currentChatName));
             }
@@ -306,6 +306,28 @@ public class Controller implements Initializable {
         }
         chatList.getSelectionModel().select(null);
         chatList.getSelectionModel().select(chatWithName.get(currentChatName));
+    }
+
+    private String convertUnicodeToEmoji(String inputText) {
+        if(inputText.contains("\\u")){
+            String outputText = "";
+            String[] tokens = inputText.split("\\\\u");
+            for (String token : tokens) {
+                if (!token.isEmpty()) {
+                    try {
+                        int codePoint = Integer.parseInt(token, 16);
+                        outputText += new String(Character.toChars(codePoint));
+                    } catch (NumberFormatException e) {
+                        outputText += "\\u" + token;
+                    }
+                }
+            }
+            System.out.println(outputText);
+            return outputText;
+        }else{
+            return inputText;
+        }
+
     }
 
     public void handleReceive(Message message) {

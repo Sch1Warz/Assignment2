@@ -1,0 +1,8 @@
+\uD83D\uDCA9
+笑脸 Emoji：U+1F600 (\ud83d\ude00)
+眨眼笑脸 Emoji：U+1F609 (\ud83d\ude09)
+心形眼 Emoji：U+1F60D (\ud83d\ude0d)
+哭脸 Emoji：U+1F622 (\ud83d\ude22)
+飞吻 Emoji：U+1F618 (\ud83d\ude18)
+抱抱 Emoji：U+1F917 (\ud83e\udd17)
+OK手势 Emoji：U+1F44C (\ud83d\udc4c)
