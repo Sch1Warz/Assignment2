@@ -11,10 +11,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -142,7 +139,6 @@ public class Controller implements Initializable {
         ComboBox<String> userSel = new ComboBox<>();
 
         // FIXME: get the user list from server, the current user's name should be filtered out
-//        userSel.getItems().addAll("Item 1", "Item 2", "Item 3");
         UserList.getUserList().forEach(s -> {
             if (!Objects.equals(s, this.username)) {
                 userSel.getItems().add(s);
@@ -189,31 +185,13 @@ public class Controller implements Initializable {
     @FXML
     public void createGroupChat() {
 
-
         Stage stage = new Stage();
-        ComboBox<String> userSel = new ComboBox<>();
+
+        ArrayList<String> aqa = new ArrayList<>();
 
         UserList.getUserList().forEach(s -> {
             if (!Objects.equals(s, this.username)) {
-                userSel.getItems().add(s);
-            }
-        });
-        Label selectedMembers = new Label(username);
-        selectedMembers.setAlignment(Pos.CENTER);
-        selectedMembers.setLayoutY(100);
-        selectedMembers.setWrapText(true);
-        selectedMembers.setMaxSize(400, 100);
-
-        AtomicReference<String> user = new AtomicReference<>();
-        List<String> selected = new ArrayList<>();
-        selected.add(username);
-
-        Button addBtn = new Button("Add");
-        addBtn.setOnAction(event -> {
-            user.set(userSel.getSelectionModel().getSelectedItem());
-            if (!selected.contains(user.get())) {
-                selectedMembers.setText(selectedMembers.getText() + "," + user.get());
-                selected.add(user.get());
+                aqa.add(s);
             }
         });
 
@@ -224,17 +202,45 @@ public class Controller implements Initializable {
         });
 
 
-        HBox box = new HBox(10);
-        VBox vBox = new VBox(10);
-        box.setAlignment(Pos.CENTER);
-        box.setPadding(new Insets(100, 200, 50, 200));
-        box.getChildren().addAll(userSel, addBtn, okBtn);
-        vBox.setAlignment(Pos.CENTER);
-        vBox.getChildren().addAll(box, selectedMembers);
-        stage.setScene(new Scene(vBox));
+        VBox vbox = new VBox();
+        HBox hbox = new HBox();
+        Label label = new Label("选择需要加入群聊的人");
+        label.setWrapText(true);
+        CheckBox[] boxArray = new CheckBox[aqa.size()];
+
+        AtomicReference<String> ChooseNames = new AtomicReference<>(this.username);
+
+        for(int i = 0; i < aqa.size(); i++){
+            CheckBox ck1 = new CheckBox(aqa.get(i));
+            hbox.getChildren().addAll(ck1);
+            boxArray[i] = ck1;
+
+            ck1.selectedProperty().addListener((arg0, arg1, arg2) -> {
+                ChooseNames.set(this.username + "," + Arrays.toString(getCheckedItem(boxArray).split("、")).replace("[","").replace("]","").replace(" ",""));
+                label.setText(String.format("您%s了%s。当前已选人员包括：%s",
+                        (ck1.isSelected() ? "选择" : "取消"), ck1.getText(), ChooseNames.get()));
+            });
+        }
+        vbox.getChildren().addAll(hbox, label, okBtn);
+        hbox.setAlignment(Pos.CENTER);
+        hbox.setPadding(new Insets(100, 200, 50, 200));
+
+        vbox.setAlignment(Pos.CENTER);
+        stage.setScene(new Scene(vbox));
         stage.showAndWait();
 
-        final String users = selectedMembers.getText();
+
+
+        String[] arr = ChooseNames.get().split(",");
+        Arrays.sort(arr);
+        String users = "";
+        for(int i = 0; i < arr.length; i++){
+            if(i != arr.length - 1){
+                users += arr[i] + ",";
+            }else {
+                users += arr[i];
+            }
+        }
         if (!users.equals(username) && !chatWithName.containsKey(users)) {
 //            System.out.println(users);
             Chat chat = new Chat(ChatType.GROUP, users);
@@ -247,6 +253,21 @@ public class Controller implements Initializable {
             chatList.getSelectionModel().select(chatWithName.get(users));
         }
     }
+
+    private String getCheckedItem(CheckBox[] boxArray) {
+        String itemDesc = "";
+        for (CheckBox box : boxArray) {
+            if (box.isSelected()) {
+                if (itemDesc.length() > 0) {
+                    itemDesc = itemDesc + "、";
+                }
+                itemDesc = itemDesc + box.getText();
+            }
+        }
+        return itemDesc;
+    }
+
+
 
     /**
      * Sends the message to the <b>currently selected</b> chat.
