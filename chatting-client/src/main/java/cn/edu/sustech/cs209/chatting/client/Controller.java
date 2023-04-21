@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Controller implements Initializable {
 
     public Label currentOnlineCnt;
+    public Label currentOnlineCnt1;
     Map<String, Integer> chatWithName;
 
     @FXML

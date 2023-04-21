@@ -31,7 +31,10 @@ public class Connector implements Runnable {
         }
         try{
             while(socket.isConnected()) {
-                Platform.runLater(() -> this.controller.currentOnlineCnt.setText(String.valueOf(UserList.getUserList().size())));
+                Platform.runLater(() -> {
+                    this.controller.currentOnlineCnt.setText("Online user counts: " + String.valueOf(UserList.getUserList().size()));
+                    this.controller.currentOnlineCnt1.setText("Online user: " + String.valueOf(UserList.getUserList()));
+                });
 
                 Message message = (Message) inputStream.readObject();
                 if(message.getMessageType() == MessageType.NOTIFICATION){
