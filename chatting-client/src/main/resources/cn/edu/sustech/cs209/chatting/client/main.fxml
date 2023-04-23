@@ -15,6 +15,7 @@
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.control.ComboBox?>
 <VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="cn.edu.sustech.cs209.chatting.client.Controller">
     <MenuBar VBox.vgrow="NEVER">
@@ -27,6 +28,9 @@
         <ListView fx:id="chatList" focusTraversable="false" maxHeight="1.7976931348623157E308" prefHeight="495.0" prefWidth="217.0" style="-fx-border-image-width: 0;" stylesheets="@resources/ListViewStyle.css"/>
         <SplitPane dividerPositions="0.85" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0">
             <ListView fx:id="chatContentList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" styleClass="@Login.css"/>
+            <ComboBox fx:id="combo1" layoutX="115.0" layoutY="71.0" prefWidth="150.0" >
+            </ComboBox>
+
             <HBox prefHeight="100.0" prefWidth="200.0">
                 <TextArea fx:id="inputArea" prefHeight="138.0" prefWidth="624.0" HBox.hgrow="ALWAYS" styleClass="@Login.css"/>
                 <Button maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#doSendMessage"

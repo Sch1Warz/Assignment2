@@ -25,7 +25,9 @@ public class Controller implements Initializable {
 
     public Label currentOnlineCnt;
     public Label currentOnlineCnt1;
+    public ComboBox<String> combo1;
     Map<String, Integer> chatWithName;
+    private static final String[] EMOJI_VALUES = { "\u263A", "\uD83D\uDE00", "\uD83D\uDE01", "\uD83D\uDE02", "\ud83d\udc4c"};
 
     @FXML
     ListView<Message> chatContentList;
@@ -118,6 +120,24 @@ public class Controller implements Initializable {
             });
 
         }
+
+
+
+        combo1.getItems().addAll("Smile", "Grinning Face", "Grinning Face with Smiling Eyes", "Face with Tears of Joy", "OKOK");
+        combo1.setOnAction((event)->{
+            String emojiName = combo1.getValue();
+            int emojiIndex = 0;
+            for (int i = 0;  i < combo1.getItems().size();  i++) {
+                if (combo1.getItems().get(i).equals(emojiName)) {
+                    emojiIndex = i;
+                    break;
+                }
+            }
+            String emojiValue = EMOJI_VALUES[emojiIndex];
+
+            inputArea.appendText(emojiValue);
+        });
+
 
         chatContentList.setCellFactory(new MessageCellFactory());
         chatList.setCellFactory(new ChatCellFactory());
