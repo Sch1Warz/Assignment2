@@ -3,6 +3,12 @@ package cn.edu.sustech.cs209.chatting.client;
 import cn.edu.sustech.cs209.chatting.client.bubble.BubbleSpec;
 import cn.edu.sustech.cs209.chatting.client.bubble.BubbledLabel;
 import cn.edu.sustech.cs209.chatting.common.*;
+
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -16,10 +22,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import java.io.*;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements Initializable {
 
@@ -27,7 +29,11 @@ public class Controller implements Initializable {
     public Label currentOnlineCnt1;
     public ComboBox<String> combo1;
     Map<String, Integer> chatWithName;
-    private static final String[] EMOJI_VALUES = { "\u263A", "\uD83D\uDE00", "\uD83D\uDE01", "\uD83D\uDE02", "\ud83d\udc4c"};
+    private static final String[] EMOJI_VALUES = {"\u263A",
+            "\uD83D\uDE00",
+            "\uD83D\uDE01",
+            "\uD83D\uDE02",
+            "\ud83d\udc4c"};
 
     @FXML
     ListView<Message> chatContentList;
@@ -55,10 +61,6 @@ public class Controller implements Initializable {
 
         Optional<String> input = dialog.showAndWait();
         if (input.isPresent() && !input.get().isEmpty()) {
-            /*
-               TODO: Check if there is a user with the same name among the currently logged-in users,
-                     if so, ask the user to change the username
-             */
             username = input.get();
             String filePath = "C:\\Users\\28573\\Desktop\\test\\Assignment2\\names.txt";
 
@@ -104,8 +106,8 @@ public class Controller implements Initializable {
 
 
                 currentUsername.setText("Current User: " + username);
-                Connector connector = new Connector(username, this);
-                Thread x = new Thread(connector);
+                Handler Handler = new Handler(username, this);
+                Thread x = new Thread(Handler);
                 x.start();
                 chatWithName = new HashMap<>();
             }
@@ -122,12 +124,15 @@ public class Controller implements Initializable {
         }
 
 
-
-        combo1.getItems().addAll("Smile", "Grinning Face", "Grinning Face with Smiling Eyes", "Face with Tears of Joy", "OKOK");
-        combo1.setOnAction((event)->{
+        combo1.getItems().addAll("Smile",
+                "Grinning Face",
+                "Grinning Face with Smiling Eyes",
+                "Face with Tears of Joy",
+                "OKOK");
+        combo1.setOnAction((event) -> {
             String emojiName = combo1.getValue();
             int emojiIndex = 0;
-            for (int i = 0;  i < combo1.getItems().size();  i++) {
+            for (int i = 0; i < combo1.getItems().size(); i++) {
                 if (combo1.getItems().get(i).equals(emojiName)) {
                     emojiIndex = i;
                     break;
@@ -179,8 +184,6 @@ public class Controller implements Initializable {
         stage.setScene(new Scene(box));
         stage.showAndWait();
 
-        // TODO: if the current user already chatted with the selected user, just open the chat with that user
-        // TODO: otherwise, create a new chat item in the left panel, the title should be the selected username
         if ((user.get() != null) && !chatWithName.containsKey(user.get())) {
 
             Chat chat = new Chat(ChatType.PRIVATE, user.get());
@@ -193,16 +196,7 @@ public class Controller implements Initializable {
         }
     }
 
-    /**
-     * A new dialog should contain a multi-select list, showing all user's name.
-     * You can select several users that will be joined in the group chat, including yourself.
-     * <p>
-     * The naming rule for group chats is similar to WeChat:
-     * If there are > 3 users: display the first three usernames, sorted in lexicographic order, then use ellipsis with the number of users, for example:
-     * UserA, UserB, UserC... (10)
-     * If there are <= 3 users: do not display the ellipsis, for example:
-     * UserA, UserB (2)
-     */
+
     @FXML
     public void createGroupChat() {
 
@@ -229,17 +223,17 @@ public class Controller implements Initializable {
         label.setWrapText(true);
         CheckBox[] boxArray = new CheckBox[aqa.size()];
 
-        AtomicReference<String> ChooseNames = new AtomicReference<>(this.username);
+        AtomicReference<String> chooseNames = new AtomicReference<>(this.username);
 
-        for(int i = 0; i < aqa.size(); i++){
+        for (int i = 0; i < aqa.size(); i++) {
             CheckBox ck1 = new CheckBox(aqa.get(i));
             hbox.getChildren().addAll(ck1);
             boxArray[i] = ck1;
 
             ck1.selectedProperty().addListener((arg0, arg1, arg2) -> {
-                ChooseNames.set(this.username + "," + Arrays.toString(getCheckedItem(boxArray).split("、")).replace("[","").replace("]","").replace(" ",""));
+                chooseNames.set(this.username + "," + Arrays.toString(getCheckedItem(boxArray).split("、")).replace("[", "").replace("]", "").replace(" ", ""));
                 label.setText(String.format("您%s了%s。当前已选人员包括：%s",
-                        (ck1.isSelected() ? "选择" : "取消"), ck1.getText(), ChooseNames.get()));
+                        (ck1.isSelected() ? "选择" : "取消"), ck1.getText(), chooseNames.get()));
             });
         }
         vbox.getChildren().addAll(hbox, label, okBtn);
@@ -251,14 +245,13 @@ public class Controller implements Initializable {
         stage.showAndWait();
 
 
-
-        String[] arr = ChooseNames.get().split(",");
+        String[] arr = chooseNames.get().split(",");
         Arrays.sort(arr);
         String users = "";
-        for(int i = 0; i < arr.length; i++){
-            if(i != arr.length - 1){
+        for (int i = 0; i < arr.length; i++) {
+            if (i != arr.length - 1) {
                 users += arr[i] + ",";
-            }else {
+            } else {
                 users += arr[i];
             }
         }
@@ -289,7 +282,6 @@ public class Controller implements Initializable {
     }
 
 
-
     /**
      * Sends the message to the <b>currently selected</b> chat.
      * <p>
@@ -303,7 +295,7 @@ public class Controller implements Initializable {
             if (currentType == ChatType.PRIVATE) {
                 Message message = new Message(MessageType.PRIVATE,
                         username, currentChatName, convertUnicodeToEmoji(inputArea.getText()));
-                Connector.send(message);
+                Handler.send(message);
 
                 Chat chat = chatList.getItems().get(chatWithName.get(currentChatName));
                 chat.addMessage(message);
@@ -317,7 +309,7 @@ public class Controller implements Initializable {
                 Message message = new Message(MessageType.GROUP,
                         sentBy, sendTo, convertUnicodeToEmoji(inputArea.getText()));
 
-                Connector.send(message);
+                Handler.send(message);
                 chat.addMessage(new Message(MessageType.GROUP,
                         username, sendTo, convertUnicodeToEmoji(inputArea.getText())));
                 chatList.getItems().set(chatWithName.get(currentChatName), chat);
@@ -330,7 +322,7 @@ public class Controller implements Initializable {
     }
 
     private String convertUnicodeToEmoji(String inputText) {
-        if(inputText.contains("\\u")){
+        if (inputText.contains("\\u")) {
             String outputText = "";
             String[] tokens = inputText.split("\\\\u");
             for (String token : tokens) {
@@ -345,14 +337,13 @@ public class Controller implements Initializable {
             }
             System.out.println(outputText);
             return outputText;
-        }else{
+        } else {
             return inputText;
         }
 
     }
 
     public void handleReceive(Message message) {
-//        System.out.println(message);
         Platform.runLater(() -> {
             if (message.getMessageType() == MessageType.PRIVATE) {
                 if (chatWithName.containsKey(message.getName())) {
@@ -371,7 +362,6 @@ public class Controller implements Initializable {
                     chatList.getSelectionModel().select(chat);
                 }
             } else if (message.getMessageType() == MessageType.GROUP) {
-//                System.out.println(message);
                 String groupName = message.getName().split(":::")[0];
                 String senderName = message.getName().split(":::")[1];
                 message.setSentBy(senderName);
@@ -422,13 +412,17 @@ public class Controller implements Initializable {
                     HBox x = new HBox();
 
                     if (username.equals(msg.getName())) {
-                        bl6.setBackground(new Background(new BackgroundFill(Color.LIGHTGREEN, null, null)));
+                        bl6.setBackground(new Background(new BackgroundFill(Color.LIGHTGREEN,
+                                null,
+                                null)));
 
                         bl6.setBubbleSpec(BubbleSpec.FACE_LEFT_CENTER);
                         x.setAlignment(Pos.TOP_RIGHT);
                         x.getChildren().addAll(bl6);
                     } else {
-                        bl6.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
+                        bl6.setBackground(new Background(new BackgroundFill(Color.WHITE,
+                                null,
+                                null)));
                         bl6.setBubbleSpec(BubbleSpec.FACE_RIGHT_CENTER);
                         x.setAlignment(Pos.TOP_LEFT);
                         x.getChildren().addAll(bl6);

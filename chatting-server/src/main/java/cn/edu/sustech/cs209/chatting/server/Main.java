@@ -8,7 +8,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-
 import java.util.HashMap;
 
 public class Main {
@@ -16,12 +15,12 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         String filePath = "C:\\Users\\28573\\Desktop\\test\\Assignment2\\names.txt";
-        FileWriter fileWriter =new FileWriter(filePath);
+        FileWriter fileWriter = new FileWriter(filePath);
         fileWriter.write("");
         fileWriter.flush();
         fileWriter.close();
 
-        System.out.println("Starting server");
+        System.out.println("Start server");
         ServerSocket serverSocket = new ServerSocket(8090);
         Server1 server = new Server1(serverSocket);
         server.keepListen();
@@ -35,17 +34,14 @@ class Server1 {
     private final ServerSocket serverSocket;
 
     public Server1(ServerSocket serverSocket) {
-//        UserList.createList();
         this.serverSocket = serverSocket;
         this.clients = new HashMap<>();
-//        UserList.addUser("123");
     }
 
     public void keepListen() {
-        System.out.println("The Server is listening for client...");
+        System.out.println("The Server is started");
         while (true) {
             try {
-
                 Socket socket = this.serverSocket.accept();
                 ClientService clientService = new ClientService(socket);
                 clientService.start();
@@ -77,11 +73,11 @@ class Server1 {
         public void run() {
             while (true) {
                 try {
-                    while(socket.isConnected()){
+                    while (socket.isConnected()) {
                         Message clientMsg = (Message) inputStream.readObject();
 //                    System.out.println(
 //                            clientMsg.getSentBy() + " " + clientMsg.getSendTo() + " " + clientMsg.getData());
-                        if(clientMsg.getMessageType() == MessageType.CONNECTED){
+                        if (clientMsg.getMessageType() == MessageType.CONNECTED) {
                             this.username = clientMsg.getName();
                             System.out.println(
                                     clientMsg.getName() + " " + clientMsg.getSendTo() + " " + clientMsg.getMessage());
@@ -92,15 +88,13 @@ class Server1 {
                             clients.forEach((s, clientService) -> {
                                 clientService.sendUserList();
                             });
-                        }
-                        else if(clientMsg.getMessageType() == MessageType.PRIVATE){
+                        } else if (clientMsg.getMessageType() == MessageType.PRIVATE) {
                             sendTo(clientMsg.getSendTo(), clientMsg);
-                        }
-                        else if(clientMsg.getMessageType() == MessageType.GROUP){
+                        } else if (clientMsg.getMessageType() == MessageType.GROUP) {
                             String members = clientMsg.getSendTo();
                             List<String> toSend = Arrays.asList(members.split(", "));
                             toSend.forEach(s -> {
-                                if(!s.equals(this.username)){
+                                if (!s.equals(this.username)) {
                                     try {
                                         sendTo(s, clientMsg);
                                     } catch (IOException e) {
@@ -114,7 +108,7 @@ class Server1 {
                 } catch (IOException | ClassNotFoundException e) {
                     System.out.println("Client No Connection!");
                     break;
-                }finally{
+                } finally {
                     String filePath = "C:\\Users\\28573\\Desktop\\test\\Assignment2\\names.txt";
                     try {
                         String result = "";
@@ -147,14 +141,14 @@ class Server1 {
                         clientService.sendUserList();
                     });
 
-                    if (inputStream != null){
+                    if (inputStream != null) {
                         try {
                             inputStream.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                    if (outputStream != null){
+                    if (outputStream != null) {
                         try {
                             outputStream.close();
                         } catch (IOException e) {
@@ -167,22 +161,22 @@ class Server1 {
 
         public synchronized void sendTo(String username, Message message) throws IOException {
             ClientService service;
-            if(clients.containsKey(username)){
+            if (clients.containsKey(username)) {
                 service = clients.get(username);
                 service.send(message);
             }
         }
 
-        public synchronized void send(Message message) throws IOException{
+        public synchronized void send(Message message) throws IOException {
             outputStream.writeObject(message);
         }
 
-        public void sendUserList(){
+        public void sendUserList() {
             Message message = new Message(MessageType.NOTIFICATION,
                     "server", this.username, UserList.listString());
             try {
                 outputStream.writeObject(message);
-            } catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
