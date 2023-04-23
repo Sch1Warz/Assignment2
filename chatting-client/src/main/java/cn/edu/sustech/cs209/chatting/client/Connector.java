@@ -87,7 +87,19 @@ public class Connector implements Runnable {
             outputStream = new ObjectOutputStream(this.socket.getOutputStream());
             this.inputStream = new ObjectInputStream(this.socket.getInputStream());
         } catch (IOException e){
-            e.printStackTrace();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Server is closed");
+                ButtonType buttonTypeOne = new ButtonType("OK");
+
+                alert.getButtonTypes().setAll(buttonTypeOne);
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == buttonTypeOne){
+                    Platform.exit();
+                }
+
+            });
         }
     }
 
