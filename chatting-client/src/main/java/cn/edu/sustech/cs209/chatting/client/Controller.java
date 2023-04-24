@@ -184,15 +184,17 @@ public class Controller implements Initializable {
         stage.setScene(new Scene(box));
         stage.showAndWait();
 
-        if ((user.get() != null) && !chatWithName.containsKey(user.get())) {
+        String ans = user.get();
 
-            Chat chat = new Chat(ChatType.PRIVATE, user.get());
+        if ((ans != null) && !chatWithName.containsKey(ans)) {
+
+            Chat chat = new Chat(ChatType.PRIVATE, ans);
             chatList.getItems().add(chat);
-            chatWithName.put(user.get(), chatList.getItems().indexOf(chat));
+            chatWithName.put(ans, chatList.getItems().indexOf(chat));
             chatList.getSelectionModel().select(chat);
-        } else if ((user.get() != null) && chatWithName.containsKey(user.get())) {
+        } else if ((ans != null) && chatWithName.containsKey(ans)) {
             chatList.getSelectionModel().select(null);
-            chatList.getSelectionModel().select(chatWithName.get(user.get()));
+            chatList.getSelectionModel().select(chatWithName.get(ans));
         }
     }
 

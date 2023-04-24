@@ -12,7 +12,13 @@ public class Chat {
 
     public Chat(ChatType type, String chatName){
         this.chatType = type;
+//        if(type == ChatType.PRIVATE){
+//            this.chatName = "私聊:" + chatName;
+//        }else{
+//            this.chatName = "群聊:" + chatName;
+//        }
         this.chatName = chatName;
+
         this.messageList = new ArrayList<>();
         this.members = new ArrayList<>();
     }
