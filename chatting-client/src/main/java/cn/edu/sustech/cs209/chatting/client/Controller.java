@@ -70,7 +70,7 @@ public class Controller implements Initializable {
                 FileReader fr = new FileReader(filePath);
                 BufferedReader br = new BufferedReader(fr);
                 while ((line = br.readLine()) != null) {
-                    System.out.println(line);
+//                    System.out.println(line);
                     String[] arr = line.split(" ");
                     for (String s : arr) {
                         if (Objects.equals(s, username)) {
@@ -295,14 +295,23 @@ public class Controller implements Initializable {
         // TODO
         if (!inputArea.getText().isEmpty() && chatList.getSelectionModel().getSelectedItem() != null) {
             if (currentType == ChatType.PRIVATE) {
-                Message message = new Message(MessageType.PRIVATE,
-                        username, currentChatName, convertUnicodeToEmoji(inputArea.getText()));
-                Handler.send(message);
+                if(UserList.getUserList().contains(currentChatName)){
+                    Message message = new Message(MessageType.PRIVATE,
+                            username, currentChatName, convertUnicodeToEmoji(inputArea.getText()));
+                    Handler.send(message);
 
-                Chat chat = chatList.getItems().get(chatWithName.get(currentChatName));
-                chat.addMessage(message);
-                chatList.getItems().set(chatWithName.get(currentChatName), chat);
-                chatList.getSelectionModel().select(chatWithName.get(currentChatName));
+                    Chat chat = chatList.getItems().get(chatWithName.get(currentChatName));
+                    chat.addMessage(message);
+                    chatList.getItems().set(chatWithName.get(currentChatName), chat);
+                    chatList.getSelectionModel().select(chatWithName.get(currentChatName));
+                }else{
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setContentText("The user is disconnected");
+                        alert.showAndWait();
+                    });
+                }
+
             } else if (currentType == ChatType.GROUP) {
                 String sentBy = currentChatName + ":::" + username;
 
@@ -337,7 +346,7 @@ public class Controller implements Initializable {
                     }
                 }
             }
-            System.out.println(outputText);
+//            System.out.println(outputText);
             return outputText;
         } else {
             return inputText;

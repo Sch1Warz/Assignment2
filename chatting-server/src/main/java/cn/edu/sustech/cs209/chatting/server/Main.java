@@ -86,7 +86,7 @@ class Server1 {
                             System.out.println(UserList.listString());
                             clients.put(this.username, this);
                             clients.forEach((s, clientService) -> {
-                                clientService.sendUserList();
+                                clientService.sendUserList("-1");
                             });
                         } else if (clientMsg.getMessageType() == MessageType.PRIVATE) {
                             sendTo(clientMsg.getSendTo(), clientMsg);
@@ -138,7 +138,7 @@ class Server1 {
                     UserList.removeUser(this.username);
                     clients.remove(this.username);
                     clients.forEach((s, clientService) -> {
-                        clientService.sendUserList();
+                        clientService.sendUserList(this.username);
                     });
 
                     if (inputStream != null) {
@@ -171,9 +171,11 @@ class Server1 {
             outputStream.writeObject(message);
         }
 
-        public void sendUserList() {
-            Message message = new Message(MessageType.NOTIFICATION,
-                    "server", this.username, UserList.listString());
+        public void sendUserList(String i) {
+            Message message;
+                message = new Message(MessageType.NOTIFICATION,
+                        "server", this.username, UserList.listString());
+
             try {
                 outputStream.writeObject(message);
             } catch (IOException e) {
